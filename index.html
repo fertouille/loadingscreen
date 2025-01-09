@@ -4,69 +4,137 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <script type="text/javascript">
-    document.write(
-      '<link rel="stylesheet" href="css/main.css?' + Math.random() + '">'
-    );
-  </script>
   <link href="https://fonts.googleapis.com/css?family=Ubuntu|Ubuntu+Condensed|Ubuntu+Mono&display=swap" rel="stylesheet">
-  <title>Orion - Chargement [Serveur Passif]</title> <!-- Je t'aime bien Ferty mais si ça apparaît vaut mieux que ce soit la commu -->
+  <link rel="stylesheet" href="css/main.css">
+  <title>Orion - Chargement</title>
 </head>
 <body>
   <div class="background">
-    <img src="images/fertycomm.jpg" class="carousel-image" alt="Image 7">
-    <img src="images/327th.png" class="carousel-image" alt="Image 2">
-    <img src="images/501stv1.png" class="carousel-image" alt="Image 3">
-    <img src="images/501stv2.png" class="carousel-image" alt="Image 4">
-    <img src="images/ctblanc.png" class="carousel-image" alt="Image 5">
-    <img src="images/fordo.png" class="carousel-image" alt="Image 6">
+    <img src="images/fertycomm.jpg" class="carousel-image" alt="Image 1">
+    <img src="images/501stv1.png" class="carousel-image" alt="Image 2">
+    <img src="images/501stv2.png" class="carousel-image" alt="Image 3">
+    <img src="images/ctblanc.png" class="carousel-image" alt="Image 4">
+    <img src="images/fordo.png" class="carousel-image" alt="Image 5">
+    <img src="images/21.png" class="carousel-image" alt="Image 6">
+    <img src="images/41.png" class="carousel-image" alt="Image 7">
+    <img src="images/shock.png" class="carousel-image" alt="Image 8">
   </div>
-  <div class="overhaul"></div>
 
-  <nav>
-    <div id="announcement"></div>
-    <span id="map">Map actuelle du serveur : </span> <!-- Meilleure indication que "vous jouez sur.." -->
-    <span id="steamid">Votre SteamID64 : </span> <!-- On dirait que ça ne s'affiche pas correctement ? chelou. -->
-  </nav>
+  <div class="title">
+    <h2>Heureux de vous accueillir sur</h2>
+    <h1>Orion - Serveur Passif</h1>
+  </div>
 
-  
+  <!-- Section Informations des Rôles (Nouveauté) -->
+  <div class="staff-container">
+    <h3>Équipe Administrative</h3>
+    <ul id="staff-list"></ul>
+  </div>
 
-  <main>
-    <div class="title">
-      <h2>Heureux de vous accueillir sur</h2>
-      <h1 id="title"></h1>
+  <div class="loading-container">
+    <div class="player-info">
+      <img id="player-avatar" src="" alt="Avatar">
+      <span id="player-name">Chargement...</span>
     </div>
-    <div class="under-nav"></div>
-    <div class="loading-box"></div>
-  </main>
+    <div id="file-info">Téléchargement : Aucun fichier</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div id="loading-text">0%</div>
+  </div>
 
-  <div id="floating-image" class="coin"></div>
-  <img id="easteregg" src="images/loutre.png" alt="Easter Egg"> <!-- Est-ce que c'est VRAIMENT nécessaire... ;-; -->
-
-  <script src="js/lib/jquery-3.4.1.min.js"></script> <!-- Récupération de la lib -->
-  <script type="text/javascript">
-    document.write(
-      '<script src="js/config.js?' + Math.random() + '"><\/script>'
-    );
-    document.write(
-      '<script src="js/main.js?' + Math.random() + '"><\/script>'
-    );
-  </script>
-
+  <script src="js/lib/jquery-3.4.1.min.js"></script>
+  <script src="js/config.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      let currentImageIndex = 0;
+    document.addEventListener('DOMContentLoaded', function () {
       const images = document.querySelectorAll('.carousel-image');
-      const totalImages = images.length;
-    
+      const progressBar = document.getElementById('progress-fill');
+      const loadingText = document.getElementById('loading-text');
+      const progressBarWidth = document.querySelector('.progress-bar').offsetWidth;
+      const playerName = document.getElementById('player-name');
+      const playerAvatar = document.getElementById('player-avatar');
+      const fileInfo = document.getElementById('file-info');
+      const mapName = document.getElementById('map-name');
+      const staffList = document.getElementById('staff-list');
+  
+      let currentImageIndex = 0;
+      let progress = 0;
+  
+      // ✅ Active directement la première image au chargement
+      images[0].classList.add('active');
+
+      // ✅ Carousel d'images
       function changeImage() {
-        images[currentImageIndex].classList.remove('active');
-        currentImageIndex = (currentImageIndex + 1) % totalImages;
-        images[currentImageIndex].classList.add('active');
+          images[currentImageIndex].classList.remove('active');
+          currentImageIndex = (currentImageIndex + 1) % images.length;
+          images[currentImageIndex].classList.add('active');
       }
-    
-      setInterval(changeImage, 7000); // Temps de changement en ms. J'ai aggrandi pour qu'on puisse profiter des screens 
-    });
+      setInterval(changeImage, 7000);
+
+      // ✅ Base de données des rôles (modifiable ici directement)
+          const staffMembers = [
+          { steamid: "76561199218413774", role: "Fondateur" },
+          { steamid: "76561198087654321", role: "Super Admin" },
+          { steamid: "76561199218413774", role: "Responsable" }
+      ];
+
+      // ✅ Fonction pour récupérer les infos Steam depuis l'API Steam (Avatar et Pseudo)
+      async function fetchSteamInfo(steamid) {
+          const avatarURL = `https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/${steamid.slice(0, 2)}/${steamid}_full.jpg`;
+          return { avatar: avatarURL, name: `Joueur ${steamid.slice(-4)}` }; // Utilisation du SteamID comme nom factice
+      }
+
+      // ✅ Fonction pour afficher les membres de l'équipe
+      async function displayStaff() {
+          for (const member of staffMembers) {
+              const steamInfo = await fetchSteamInfo(member.steamid);
+              const listItem = document.createElement('li');
+              listItem.innerHTML = `
+                  <img src="${steamInfo.avatar}" alt="${steamInfo.name}">
+                  <span>${steamInfo.name} - ${member.role}</span>
+              `;
+              staffList.appendChild(listItem);
+          }
+      }
+      displayStaff(); // Appel de la fonction pour afficher les membres
+  
+      // ✅ Mise à jour de la barre de progression
+      function updateProgressBar(percentage) {
+          progressBar.style.width = `${percentage}%`;
+          loadingText.textContent = `${percentage}%`;
+  
+          // Ajuste le texte pour éviter qu'il ne dépasse
+          const textPosition = Math.min((percentage / 100) * progressBarWidth, progressBarWidth - loadingText.offsetWidth - 10);
+          loadingText.style.left = `${textPosition}px`;
+      }
+  
+      // ✅ Simulation de test local
+      const progressInterval = setInterval(() => {
+          if (progress < 100) {
+              progress += Math.floor(Math.random() * 5) + 1;
+              updateProgressBar(progress);
+          } else {
+              clearInterval(progressInterval);
+              loadingText.textContent = 'Chargement terminé !';
+              loadingText.style.left = `${progressBarWidth - loadingText.offsetWidth - -200}px`; 
+          }
+      }, 200);
+  
+      // ✅ Intégration GMod (SteamID, Map, Fichiers...)
+      window.SetFilesTotal = (total) => window.filesTotal = total;
+      window.SetFilesNeeded = (needed) => {
+          const percentage = Math.round(((window.filesTotal - needed) / window.filesTotal) * 100);
+          updateProgressBar(percentage);
+      };
+      window.SetStatusChanged = (status) => fileInfo.textContent = `Téléchargement : ${status}`;
+      window.GameDetails = (servername, serverurl, mapname, maxplayers, steamid, gamemode) => {
+          playerName.textContent = servername;
+          mapName.textContent = mapname;
+          playerAvatar.src = `https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/${steamid.slice(0, 2)}/${steamid}_full.jpg`;
+      };
+  });
+  
+  
   </script>
 </body>
 </html>
